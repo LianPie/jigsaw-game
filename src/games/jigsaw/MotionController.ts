@@ -1,4 +1,3 @@
-
 type MotionCallback = () => void;
 
 type MotionEventConstructor = typeof DeviceMotionEvent & {
@@ -6,34 +5,22 @@ type MotionEventConstructor = typeof DeviceMotionEvent & {
 };
 
 export default class MotionController {
-    private lastAcceleration: {
-        x: number;
-        y: number;
-        z: number;
-    } | null = null;
-
+    private baseline: { x: number; y: number; z: number } | null = null;
     private lastTrigger = 0;
     private listener: ((event: DeviceMotionEvent) => void) | null = null;
 
-    // Adjust these after testing on a real phone
-    private readonly linearThreshold = 18;
-    private readonly changeThreshold = 10;
-    private readonly cooldown = 700;
+    private readonly movementThreshold = 2.5;
+    private readonly cooldown = 1200;
 
     async start(onMovement: MotionCallback) {
         const MotionEvent = window.DeviceMotionEvent as
             | MotionEventConstructor
             | undefined;
 
-        console.log('DeviceMotionEvent:', window.DeviceMotionEvent);
-        console.log('Secure context:', window.isSecureContext);
-
         if (!MotionEvent) {
             throw new Error('Motion sensors are not supported.');
         }
 
-        // Some browsers, particularly iOS Safari,
-        // require permission through a user interaction.
         if (MotionEvent.requestPermission) {
             const permission = await MotionEvent.requestPermission();
 
@@ -43,13 +30,13 @@ export default class MotionController {
         }
 
         this.stop();
-
-        this.lastAcceleration = null;
+        this.baseline = null;
+        this.lastTrigger = 0;
 
         this.listener = (event: DeviceMotionEvent) => {
             const acceleration = event.acceleration;
 
-            // Prefer linear acceleration when available.
+            // Detect actual movement when linear acceleration is available.
             if (
                 acceleration?.x != null &&
                 acceleration.y != null &&
@@ -61,22 +48,17 @@ export default class MotionController {
                     acceleration.z ** 2
                 );
 
-                if (magnitude > this.linearThreshold) {
+                if (magnitude > this.movementThreshold) {
                     this.trigger(onMovement);
                 }
 
                 return;
             }
 
-            // Fallback: compare changes in acceleration
-            // including gravity.
+            // Fallback: detect changes in phone orientation.
             const raw = event.accelerationIncludingGravity;
 
-            if (
-                raw?.x == null ||
-                raw.y == null ||
-                raw.z == null
-            ) {
+            if (raw?.x == null || raw.y == null || raw.z == null) {
                 return;
             }
 
@@ -86,21 +68,27 @@ export default class MotionController {
                 z: raw.z,
             };
 
-            if (this.lastAcceleration) {
-                const dx = current.x - this.lastAcceleration.x;
-                const dy = current.y - this.lastAcceleration.y;
-                const dz = current.z - this.lastAcceleration.z;
-
-                const change = Math.sqrt(
-                    dx ** 2 + dy ** 2 + dz ** 2
-                );
-
-                if (change > this.changeThreshold) {
-                    this.trigger(onMovement);
-                }
+            if (!this.baseline) {
+                this.baseline = current;
+                return;
             }
 
-            this.lastAcceleration = current;
+            const dx = current.x - this.baseline.x;
+            const dy = current.y - this.baseline.y;
+            const dz = current.z - this.baseline.z;
+
+            const change = Math.sqrt(dx ** 2 + dy ** 2 + dz ** 2);
+
+            if (change > this.movementThreshold) {
+                this.trigger(onMovement);
+                this.baseline = current;
+                return;
+            }
+
+            // Slowly adapt to normal sensor noise while resting.
+            this.baseline.x += dx * 0.02;
+            this.baseline.y += dy * 0.02;
+            this.baseline.z += dz * 0.02;
         };
 
         window.addEventListener('devicemotion', this.listener);
@@ -109,9 +97,7 @@ export default class MotionController {
     private trigger(callback: MotionCallback) {
         const now = Date.now();
 
-        if (now - this.lastTrigger < this.cooldown) {
-            return;
-        }
+        if (now - this.lastTrigger < this.cooldown) return;
 
         this.lastTrigger = now;
         callback();
@@ -119,14 +105,10 @@ export default class MotionController {
 
     stop() {
         if (this.listener) {
-            window.removeEventListener(
-                'devicemotion',
-                this.listener
-            );
-
+            window.removeEventListener('devicemotion', this.listener);
             this.listener = null;
         }
 
-        this.lastAcceleration = null;
+        this.baseline = null;
     }
 }
