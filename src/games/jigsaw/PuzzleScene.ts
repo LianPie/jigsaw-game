@@ -6,7 +6,7 @@ import MotionController from './MotionController';
 export default class PuzzleScene extends Phaser.Scene {
     private completed = 0;
     private statusText!: Phaser.GameObjects.Text;
-    
+
     private readonly tileSize = 75;
     private readonly gridSize = 4;
     private readonly boardX = 50;
@@ -62,34 +62,16 @@ export default class PuzzleScene extends Phaser.Scene {
             color: '#453e3a',
         }).setOrigin(0.5);
 
+        this.statusText.setText('Motion detection active');
 
-        const motionButton = this.add
-            .text(200, 455, 'Enable Motion Detection', {
-                fontSize: '17px',
-                color: '#ffffff',
-                backgroundColor: '#453e3a',
-                padding: {
-                    x: 14,
-                    y: 10,
-                },
-            })
-            .setOrigin(0.5)
-            .setInteractive({ useHandCursor: true });
-
-        motionButton.on('pointerdown', async () => {
-            try {
-                await this.motionController.start(() => {
-                    this.scatterConnectedPieces();
-                });
-
-                motionButton.setText('Motion Detection Active');
-            } catch (error) {
-                this.statusText.setText(
-                    error instanceof Error
-                        ? error.message
-                        : 'Could not access motion sensors.'
-                );
-            }
+        this.motionController.start(() => {
+            this.scatterConnectedPieces();
+        }).catch((error) => {
+            this.statusText.setText(
+                error instanceof Error
+                    ? error.message
+                    : 'Motion detection unavailable'
+            );
         });
 
 
