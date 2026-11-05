@@ -1,36 +1,77 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Silly Jigsaw 🧩
 
-## Getting Started
+A small experimental jigsaw puzzle game built with **Next.js and Phaser**, packaged as an Android application using **Capacitor**.
 
-First, run the development server:
+This project started as an experiment to explore building Android APKs from a Next.js application without using Android Studio, using GitHub Actions for automated builds.
+
+## Features
+
+- Interactive jigsaw puzzle gameplay
+- Drag-and-drop puzzle pieces
+- Automatic piece connection when correctly positioned
+- Motion-based interactions using device orientation sensors
+- Sound effects for motion-triggered interactions
+- Mobile-friendly game layout
+
+## Tech Stack
+
+- **Next.js** – Application framework
+- **TypeScript** – Application logic
+- **Phaser** – 2D game engine
+- **Capacitor** – Android application packaging
+- **GitHub Actions** – Automated Android APK builds
+
+## Running Locally
+
+Clone the repository:
+
+```bash
+git clone YOUR_REPOSITORY_URL
+cd jigsaw-game
+```
+
+Install dependencies:
+
+```bash
+npm install
+```
+
+Start the development server:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open `http://localhost:3000` in your browser.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Building the Android APK
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+The project uses Next.js static export and Capacitor to package the web application for Android.
 
-## Learn More
+The APK build is automated through GitHub Actions.
 
-To learn more about Next.js, take a look at the following resources:
+Every push to the `main` branch triggers the Android build workflow.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+To download the APK:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+1. Open the repository on GitHub.
+2. Navigate to **Actions**.
+3. Select the latest successful Android build.
+4. Download the `silly-jigsaw-apk` artifact.
 
-## Deploy on Vercel
+The generated APK is a debug build intended for testing.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Project Status
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+This is an experimental project and a learning exercise focused on:
+
+- Integrating Phaser into a Next.js application.
+- Packaging a Next.js application as an Android app using Capacitor.
+- Automating Android APK builds with GitHub Actions.
+- Exploring device motion and orientation sensors in Android WebView.
+
+The project is still a work in progress.
+
+---
+
+*Built as an experiment in web-to-Android development.*
