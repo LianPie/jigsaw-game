@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Silly Jigsaw</string>
+    <string name="title_activity_main">Silly Jigsaw</string>
+    <string name="package_name">com.sillyjigsaw.game</string>
+    <string name="custom_url_scheme">com.sillyjigsaw.game</string>
+</resources>

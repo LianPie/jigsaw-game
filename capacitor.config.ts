@@ -2,8 +2,8 @@ import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
   appId: 'com.sillyjigsaw.game',
-  appName: 'sillyjigsaw',
-  webDir: 'public'
+  appName: 'Silly Jigsaw',
+  webDir: 'out',
 };
 
 export default config;
