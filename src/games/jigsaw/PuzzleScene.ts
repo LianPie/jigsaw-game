@@ -2,14 +2,15 @@ import Phaser from 'phaser';
 import { drawPieceShape } from './PuzzleGeometry';
 import MotionController from './MotionController';
 
+
 export default class PuzzleScene extends Phaser.Scene {
     private completed = 0;
     private statusText!: Phaser.GameObjects.Text;
-
-    private readonly tileSize = 100;
-    private readonly gridSize = 3;
+    
+    private readonly tileSize = 75;
+    private readonly gridSize = 4;
     private readonly boardX = 50;
-    private readonly boardY = 70;
+    private readonly boardY = 55;
 
     private motionController = new MotionController();
 
@@ -38,13 +39,14 @@ export default class PuzzleScene extends Phaser.Scene {
         console.log('PUZZLE PRELOAD');
 
         this.load.image('puzzle', '/images/puzzle.jpg');
+        this.load.audio('yoink', '/sounds/yoink.m4a');
     }
 
     create() {
         console.log('PUZZLE CREATE');
 
         this.completed = 0;
-        
+
         this.events.once(
             Phaser.Scenes.Events.SHUTDOWN,
             () => this.motionController.stop()
@@ -77,7 +79,7 @@ export default class PuzzleScene extends Phaser.Scene {
         motionButton.on('pointerdown', async () => {
             try {
                 await this.motionController.start(() => {
-                    this.statusText.setText('Movement detected!');
+                    this.scatterConnectedPieces();
                 });
 
                 motionButton.setText('Motion Detection Active');
@@ -90,20 +92,7 @@ export default class PuzzleScene extends Phaser.Scene {
             }
         });
 
-        // Draw the empty puzzle board
-        const board = this.add.graphics();
-        board.lineStyle(2, 0xaaa18a, 1);
 
-        for (let row = 0; row < this.gridSize; row++) {
-            for (let col = 0; col < this.gridSize; col++) {
-                board.strokeRect(
-                    this.boardX + col * this.tileSize,
-                    this.boardY + row * this.tileSize,
-                    this.tileSize,
-                    this.tileSize
-                );
-            }
-        }
 
         this.createPieces();
     }
@@ -370,7 +359,52 @@ export default class PuzzleScene extends Phaser.Scene {
             }
         }
     }
+    private scatterConnectedPieces() {
+        // Don't interrupt an active drag
+        if (this.activeDrag) return;
 
+        let scattered = false;
+
+        // Take a snapshot because we'll modify the clusters map
+        const existingClusters = Array.from(this.clusters.entries());
+
+        for (const [clusterId, cluster] of existingClusters) {
+            // Only scatter clusters containing multiple pieces
+            if (cluster.size < 2) continue;
+
+            this.clusters.delete(clusterId);
+
+            // Separate every piece into its own cluster
+            cluster.forEach(piece => {
+                const newId = this.nextClusterId++;
+
+                piece.setData('clusterId', newId);
+
+                this.clusters.set(newId, new Set([piece]));
+
+                // Scatter the piece to a new position
+                const targetX = Phaser.Math.Between(75, 325);
+                const targetY = Phaser.Math.Between(455, 605);
+
+                this.tweens.add({
+                    targets: piece,
+                    x: targetX,
+                    y: targetY,
+                    duration: 250,
+                    ease: 'Cubic.Out',
+                });
+
+                piece.setDepth(10);
+            });
+
+            scattered = true;
+        }
+
+        if (scattered) {
+            this.statusText.setText('YOINK! 💥');
+            this.sound.play('yoink', { volume: 0.7 });
+        }
+    }
     private updatePuzzleStatus() {
         const largestCluster = Math.max(
             ...Array.from(

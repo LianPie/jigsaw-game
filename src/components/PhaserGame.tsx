@@ -26,7 +26,7 @@ export default function PhaserGame() {
             game = new Phaser.Game({
                 type: Phaser.AUTO,
                 width: 400,
-                height: 680,
+                height: 850,
                 backgroundColor: '#fff7cc',
                 parent: gameRef.current,
                 scene: [PuzzleScene],

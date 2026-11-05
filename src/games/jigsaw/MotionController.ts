@@ -16,9 +16,9 @@ export default class MotionController {
     private listener: ((event: DeviceMotionEvent) => void) | null = null;
 
     // Adjust these after testing on a real phone
-    private readonly linearThreshold = 22;
-    private readonly changeThreshold = 13;
-    private readonly cooldown = 1200;
+    private readonly linearThreshold = 30;
+    private readonly changeThreshold = 20;
+    private readonly cooldown = 1800;
 
     async start(onMovement: MotionCallback) {
         const MotionEvent = window.DeviceMotionEvent as
@@ -27,7 +27,7 @@ export default class MotionController {
 
         console.log('DeviceMotionEvent:', window.DeviceMotionEvent);
         console.log('Secure context:', window.isSecureContext);
-        
+
         if (!MotionEvent) {
             throw new Error('Motion sensors are not supported.');
         }
