@@ -1,17 +1,16 @@
 type MotionCallback = () => void;
 
 export default class MotionController {
-    private lastOrientation: {
+    private restingOrientation: {
         beta: number;
         gamma: number;
     } | null = null;
 
     private listener: ((event: DeviceOrientationEvent) => void) | null = null;
-
-    private readonly angleThreshold = 8;
-    private readonly cooldown = 1200;
-
     private lastTrigger = 0;
+
+    private readonly angleThreshold = 4;
+    private readonly cooldown = 1200;
 
     async start(onMovement: MotionCallback) {
         if (!('DeviceOrientationEvent' in window)) {
@@ -19,7 +18,8 @@ export default class MotionController {
         }
 
         this.stop();
-        this.lastOrientation = null;
+        this.restingOrientation = null;
+        this.lastTrigger = 0;
 
         this.listener = (event: DeviceOrientationEvent) => {
             if (event.beta === null || event.gamma === null) return;
@@ -29,24 +29,27 @@ export default class MotionController {
                 gamma: event.gamma,
             };
 
-            if (!this.lastOrientation) {
-                this.lastOrientation = current;
+            // Capture the initial resting position.
+            if (!this.restingOrientation) {
+                this.restingOrientation = current;
                 return;
             }
 
             const betaChange = Math.abs(
-                current.beta - this.lastOrientation.beta
+                current.beta - this.restingOrientation.beta
             );
 
             const gammaChange = Math.abs(
-                current.gamma - this.lastOrientation.gamma
+                current.gamma - this.restingOrientation.gamma
             );
 
-            const change = Math.sqrt(
+            const totalChange = Math.sqrt(
                 betaChange ** 2 + gammaChange ** 2
             );
 
-            if (change >= this.angleThreshold) {
+            // Compare against the original resting position,
+            // not the previous sensor reading.
+            if (totalChange >= this.angleThreshold) {
                 const now = Date.now();
 
                 if (now - this.lastTrigger >= this.cooldown) {
@@ -54,8 +57,6 @@ export default class MotionController {
                     onMovement();
                 }
             }
-
-            this.lastOrientation = current;
         };
 
         window.addEventListener('deviceorientation', this.listener);
@@ -67,6 +68,6 @@ export default class MotionController {
             this.listener = null;
         }
 
-        this.lastOrientation = null;
+        this.restingOrientation = null;
     }
 }
