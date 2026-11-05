@@ -9,7 +9,7 @@ export default class MotionController {
     private listener: ((event: DeviceOrientationEvent) => void) | null = null;
     private lastTrigger = 0;
 
-    private readonly angleThreshold = 4;
+    private readonly angleThreshold = 10;
     private readonly cooldown = 1200;
 
     async start(onMovement: MotionCallback) {
