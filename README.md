@@ -26,7 +26,7 @@ This project started as an experiment to explore building Android APKs from a Ne
 Clone the repository:
 
 ```bash
-git clone YOUR_REPOSITORY_URL
+git clone https://github.com/LianPie/jigsaw-game
 cd jigsaw-game
 ```
 
