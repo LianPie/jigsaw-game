@@ -16,9 +16,9 @@ export default class MotionController {
     private listener: ((event: DeviceMotionEvent) => void) | null = null;
 
     // Adjust these after testing on a real phone
-    private readonly linearThreshold = 30;
-    private readonly changeThreshold = 20;
-    private readonly cooldown = 1800;
+    private readonly linearThreshold = 18;
+    private readonly changeThreshold = 10;
+    private readonly cooldown = 700;
 
     async start(onMovement: MotionCallback) {
         const MotionEvent = window.DeviceMotionEvent as
